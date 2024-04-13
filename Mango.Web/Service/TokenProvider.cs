@@ -1,10 +1,9 @@
 ﻿using Mango.Web.Service.IService;
 using Mango.Web.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Mango.Web.Service
 {
-    public class TokenProvider : ItokenProvider
+    public class TokenProvider : ITokenProvider
     {
         private readonly IHttpContextAccessor _contextAccessor;
 
