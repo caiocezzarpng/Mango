@@ -1,6 +1,6 @@
 ﻿using static Mango.Web.Utils.StaticDetails;
 
-namespace Mango.Web.Models
+namespace Mango.Web.Models.DTOs
 {
     public class RequestDTO
     {

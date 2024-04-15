@@ -1,5 +1,4 @@
-﻿using Mango.Services.CouponAPI.Models.DTO;
-using Mango.Web.Models;
+﻿using Mango.Web.Models.DTOs;
 using Mango.Web.Service.IService;
 using Mango.Web.Utils;
 using Microsoft.AspNetCore.Authentication;
@@ -9,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace Mango.Web.Controllers
 {
@@ -114,7 +114,7 @@ namespace Mango.Web.Controllers
         {
             var handler = new JwtSecurityTokenHandler();
 
-            var jwt = handler.ReadJwtToken(model.Token);
+            var jwt = handler.ReadJwtToken(model.ToString());
 
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
             identity.AddClaim(new Claim(JwtRegisteredClaimNames.Email,

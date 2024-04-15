@@ -1,10 +1,9 @@
-﻿using Mango.Services.CouponAPI.Models.DTO;
-using Mango.Web.Models;
+﻿using Mango.Web.Models.DTOs;
 
 namespace Mango.Web.Service.IService
 {
     public interface IBaseService
     {
-        Task<ResponseDTO?> SendAsync(RequestDTO requestDTO);
+        Task<ResponseDTO?> SendAsync(RequestDTO requestDTO, bool withBearer = true);
     }
 }

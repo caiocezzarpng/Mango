@@ -1,5 +1,4 @@
-﻿using Mango.Services.CouponAPI.Models.DTO;
-using Mango.Web.Models;
+﻿using Mango.Web.Models.DTOs;
 using Mango.Web.Service.IService;
 using Newtonsoft.Json;
 using System.Net;
@@ -20,16 +19,22 @@ namespace Mango.Web.Service
             _tokenProvider = tokenProvider;
         }
 
-        public async Task<ResponseDTO?> SendAsync(RequestDTO requestDTO)
+        public async Task<ResponseDTO?> SendAsync(RequestDTO requestDTO, bool withBearer = true)
         {
             try
             {
                 HttpClient client = _httpClientFactory.CreateClient("MangoAPI");
                 HttpRequestMessage message = new();
                 message.Headers.Add("Accept", "application/json");
-                // Token
+
+                if (withBearer)
+                {
+                    var token = _tokenProvider.GetToken();
+                    message.Headers.Add("Authorization", $"Bearer {token}");
+                }
 
                 message.RequestUri = new Uri(requestDTO.Url);
+
                 if (requestDTO.Data != null)
                 {
                     message.Content = new StringContent(JsonConvert.SerializeObject(requestDTO.Data), Encoding.UTF8, "application/json");

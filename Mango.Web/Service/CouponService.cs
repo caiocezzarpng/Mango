@@ -1,5 +1,5 @@
-﻿using Mango.Services.CouponAPI.Models.DTO;
-using Mango.Web.Models;
+﻿using Mango.Web.Models;
+using Mango.Web.Models.DTOs;
 using Mango.Web.Service.IService;
 using Mango.Web.Utils;
 
