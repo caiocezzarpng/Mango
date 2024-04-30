@@ -26,7 +26,7 @@ namespace Mango.Services.ProductAPI.Data
             {
                 Id = 2,
                 Name = "Paneer Tikka",
-                Price = 13.99m,
+                Price = 13.99,
                 Description = " Quisque vel lacus ac magna, vehicula sagittis ut non lacus.<br/> Vestibulum arcu turpis, maximus malesuada neque. Phasellus commodo cursus pretium.",
                 ImageUrl = "https://placehold.co/602x402",
                 Category = "Appetizer"
@@ -35,7 +35,7 @@ namespace Mango.Services.ProductAPI.Data
             {
                 Id = 3,
                 Name = "Sweet Pie",
-                Price = 10.99m,
+                Price = 10.99,
                 Description = " Quisque vel lacus ac magna, vehicula sagittis ut non lacus.<br/> Vestibulum arcu turpis, maximus malesuada neque. Phasellus commodo cursus pretium.",
                 ImageUrl = "https://placehold.co/601x401",
                 Category = "Dessert"

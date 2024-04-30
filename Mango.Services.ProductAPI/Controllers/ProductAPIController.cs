@@ -29,7 +29,7 @@ namespace Mango.Services.ProductAPI.Controllers
             try
             {
                 IEnumerable<Product> objList = _db.Products.ToList();
-                _response.Result = _mapper.Map<ProductDTO>(objList);
+                _response.Result = _mapper.Map<IEnumerable<ProductDTO>>(objList);
             }
             catch (Exception ex)
             {
@@ -81,7 +81,7 @@ namespace Mango.Services.ProductAPI.Controllers
             try
             {
                 IEnumerable<Product> objList = _db.Products.Where(u => u.Category.ToLower() == categoryName.ToLower());
-                _response.Result = _mapper.Map<ProductDTO>(objList);
+                _response.Result = _mapper.Map<IEnumerable<ProductDTO>>(objList);
             }
             catch (Exception ex)
             {
@@ -144,7 +144,7 @@ namespace Mango.Services.ProductAPI.Controllers
                 _db.Products.Remove(obj);
                 _db.SaveChanges();
 
-                _response.Message = "Coupon has been deleted!";
+                _response.Message = "Product has been deleted!";
             }
             catch (Exception ex)
             {
