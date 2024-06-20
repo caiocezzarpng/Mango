@@ -46,11 +46,10 @@
 							$$$@item.Price.ToString("c")
 						</td>
 						<td>
-							<a class="btn btn-success">
+							<a class="btn btn-success" asp-action="ProductEdit" asp-route-productId="@item.Id">
 								<i class="bi bi-pencil-square"></i>
 							</a>
-							<a class="btn btn-danger">
-								<a asp-action="ProductDelete" asp-route-couponId="@item.Id" class="btn btn-danger">
+							<a class="btn btn-danger" asp-action="ProductDelete" asp-route-couponId="@item.Id">
 								<i class="bi bi-trash"></i>
 							</a>
 						</td>

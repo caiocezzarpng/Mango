@@ -1,4 +1,6 @@
-﻿namespace Mango.Web.Models.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Mango.Web.Models.DTOs
 {
     public class ProductDTO
     {
@@ -8,5 +10,8 @@
         public double Price { get; set; }
         public string Description { get; set; }
         public string Category { get; set; }
+
+        [Range(1, 100)]
+        public int count { get; set; } = 1;
     }
 }
