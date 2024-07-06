@@ -37,7 +37,7 @@ namespace Mango.Services.AuthAPI.Controllers
         {
             var loginResponse = await _authService.Login(model);
 
-            if (loginResponse == null)
+            if (loginResponse.User == null)
             {
                 _responseDTO.Success = false;
                 _responseDTO.Message = "Username or password is incorrect";

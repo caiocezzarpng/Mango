@@ -1,4 +1,4 @@
-﻿@model ProductDTO
+﻿@Model.ProductDTO
 
 <form method="post">
     <div class=" pt-4">
@@ -8,7 +8,7 @@
                     <h1 class="text-white">@Model.Name</h1>
                 </div>
                 <div class="col-12 col-md-6 text-end">
-                    <h1 class="text-warning"> @String.Format("{0:c}", Model.Price)</h1>
+                    <h1 class="text-warning"> @string.Format("{0:c}", Model.Price)</h1>
                 </div>
             </div>
             <div class="card-body">
@@ -22,11 +22,8 @@
 
                                 <div class="col-12">
                                     <span class="badge bg-primary text-success p-3 border">@Model.Category</span>
-                                    <p class="text-secondary pt-3">@Html.Raw(@Model.Description)</p>
+                                    <p class="text-secondary pt-3">@Html.Raw(Model.Description)</p>
                                 </div>
-                            </div>
-                            <div class="row mx-0">
-                                <input asp-for="Count" class="form-control" />
                             </div>
                         </div>
                     </div>
@@ -44,6 +41,6 @@
     </div>
 </form>
 
-@section Scripts{
+@section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
