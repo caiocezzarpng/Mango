@@ -1,4 +1,5 @@
-﻿using Mango.Web.Models;
+﻿using IdentityModel;
+using Mango.Web.Models;
 using Mango.Web.Models.DTOs;
 using Mango.Web.Service.IService;
 using Microsoft.AspNetCore.Authorization;
@@ -11,10 +12,12 @@ namespace Mango.Web.Controllers
     public class HomeController : Controller
     {
         private readonly IProductService _productService;
+        private readonly ICartService _cartService;
 
-        public HomeController(IProductService productService)
+        public HomeController(IProductService productService, ICartService cartService)
         {
             _productService = productService;
+            _cartService = cartService;
         }
 
         public async Task<IActionResult> Index()
@@ -52,6 +55,44 @@ namespace Mango.Web.Controllers
             }
 
             return View(model);
+        }
+
+        [Authorize]
+        [ActionName("ProductDetails")]
+        public async Task<IActionResult> ProductDetails(ProductDTO productDTO)
+        {
+            CartDTO cartDTO = new()
+            {
+                CartHeader = new()
+                {
+                    UserId = User.Claims.Where(u => u.Type == JwtClaimTypes.Subject)?.FirstOrDefault()?.Value
+                }
+            };
+
+            CartDetailsDTO cartDetailsDTO = new()
+            {
+                Count = productDTO.count,
+                ProductId = productDTO.Id
+            };
+
+            List<CartDetailsDTO> cartDetailsDTOs = new() { cartDetailsDTO };
+            cartDTO.CartDetails = cartDetailsDTOs;
+
+
+
+            ResponseDTO? response = await _cartService.UpsertCartAsync(cartDTO);
+
+            if (response != null && response.Success)
+            {
+                TempData["success"] = "Item has been added to the cart";
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+
+            return View(productDTO);
         }
 
         public IActionResult Privacy()

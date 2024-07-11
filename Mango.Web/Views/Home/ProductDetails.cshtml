@@ -1,7 +1,7 @@
-﻿@Model.ProductDTO
-
+﻿@model ProductDTO
 <form method="post">
-    <div class=" pt-4">
+    <input type="hidden" asp-for="Id" />
+    <div class="pt-4">
         <div class="card container" style="border:1px solid #808080;">
             <div class="card-header bg-dark text-light row" style="border-radius: 0px;">
                 <div class="col-12 col-md-6">
@@ -19,7 +19,6 @@
                         </div>
                         <div class="col-12 col-lg-8">
                             <div class="row pl-3">
-
                                 <div class="col-12">
                                     <span class="badge bg-primary text-success p-3 border">@Model.Category</span>
                                     <p class="text-secondary pt-3">@Html.Raw(Model.Description)</p>
