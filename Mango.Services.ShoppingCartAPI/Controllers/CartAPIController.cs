@@ -41,7 +41,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
 
                 IEnumerable<ProductDTO> productDTOs = await _productService.GetProducts();
 
-                foreach(var item in cartDTO.CartDetails)
+                foreach (var item in cartDTO.CartDetails)
                 {
                     item.Product = productDTOs.FirstOrDefault(u => u.Id == item.ProductId);
                     cartDTO.CartHeader.CartTotal += (item.Count * item.Product.Price);
@@ -57,8 +57,28 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             return _response;
         }
 
+        [HttpPost("ApplyCoupon")]
+        public async Task<object> ApplyCoupon([FromBody] CartDTO cartDTO)
+        {
+            try
+            {
+                var cartFromDb = await _db.CartHeaders.FirstAsync(u => u.UserId == cartDTO.CartHeader.UserId);
+                cartFromDb.CouponCode = cartDTO.CartHeader.CouponCode;
+                _db.CartHeaders.Update(cartFromDb);
+                await _db.SaveChangesAsync();
+                _response.Result = true;
+            }
+            catch (Exception ex)
+            {
+                _response.Message = ex.Message.ToString();
+                _response.Success = false;
+            }
+            return _response;
+        }
+
         [HttpPost("CartUpsert")]
-        public async Task<ResponseDTO> CartUpsert(CartDTO cartDTO) {
+        public async Task<ResponseDTO> CartUpsert(CartDTO cartDTO)
+        {
             try
             {
                 var cartHeaderFromDb = await _db.CartHeaders.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == cartDTO.CartHeader.UserId);
