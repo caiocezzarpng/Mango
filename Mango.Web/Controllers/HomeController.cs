@@ -58,6 +58,7 @@ namespace Mango.Web.Controllers
         }
 
         [Authorize]
+        [HttpPost]
         [ActionName("ProductDetails")]
         public async Task<IActionResult> ProductDetails(ProductDTO productDTO)
         {

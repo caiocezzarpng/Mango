@@ -113,7 +113,7 @@ namespace Mango.Web.Controllers
         {
             var handler = new JwtSecurityTokenHandler();
 
-            var jwt = handler.ReadJwtToken(model.ToString());
+            var jwt = handler.ReadJwtToken(model.Token);
 
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
             identity.AddClaim(new Claim(JwtRegisteredClaimNames.Email,
