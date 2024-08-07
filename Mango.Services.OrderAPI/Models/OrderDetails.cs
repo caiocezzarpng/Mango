@@ -7,7 +7,7 @@ namespace Mango.Services.OrderAPI.Models
     public class OrderDetails
     {
         [Key]
-        public long Id { get; set; }
+        public long OrderDetailsId { get; set; }
 
         public long OrderHeaderId { get; set; }
 

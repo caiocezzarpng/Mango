@@ -2,7 +2,7 @@
 {
     public class OrderHeaderDTO
     {
-        public long Id { get; set; }
+        public long OrderHeaderId { get; set; }
         public string? UserId { get; set; }
         public string? CouponCode { get; set; }
         public double Discount { get; set; }

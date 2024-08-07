@@ -2,7 +2,7 @@
 {
     public class OrderDetailsDTO
     {
-        public long Id { get; set; }
+        public long OrderDetailsId { get; set; }
         public long OrderHeaderId { get; set; }
         public long ProductId { get; set; }
         public ProductDTO? Product { get; set; }
