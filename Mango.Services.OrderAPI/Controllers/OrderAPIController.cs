@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
+using Mango.MessageBus;
 using Mango.Services.OrderAPI.Data;
 using Mango.Services.OrderAPI.Models;
 using Mango.Services.OrderAPI.Models.DTOs;
-using Mango.Services.OrderAPI.Service.IService;
 using Mango.Services.OrderAPI.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,17 +15,19 @@ namespace Mango.Services.OrderAPI.Controllers
     [ApiController]
     public class OrderAPIController : ControllerBase
     {
-        private IMapper _mapper;
         private readonly AppDbContext _db;
-        private IProductService _productService;
+        private readonly IMessageBus _messageBus;
+        private readonly IConfiguration _configuration;
+        private IMapper _mapper;
         protected ResponseDTO _response;
 
-        public OrderAPIController(IMapper mapper, AppDbContext db, IProductService productService)
+        public OrderAPIController(IMapper mapper, AppDbContext db, IMessageBus messageBus, IConfiguration configuration)
         {
             _mapper = mapper;
             _db = db;
-            _productService = productService;
+            _messageBus = messageBus;
             _response = new ResponseDTO();
+            _configuration = configuration;
         }
 
         [Authorize]
@@ -135,6 +137,17 @@ namespace Mango.Services.OrderAPI.Controllers
                     orderHeader.PaymentIntentId = paymentIntent.Id;
                     orderHeader.Status = StaticDetails.Status_Approved;
                     await _db.SaveChangesAsync();
+
+                    RewardDTO reward = new()
+                    {
+                        OrderId = orderHeader.OrderHeaderId,
+                        RewardActivity = Convert.ToInt32(orderHeader.OrderTotal),
+                        UserId = orderHeader.UserId
+                    };
+
+                    string topicName = _configuration.GetValue<string>("TopicAndQueueNames:OrderCreatedTopic");
+
+                    await _messageBus.PublishMessage(reward, topicName);
 
                     _response.Result = _mapper.Map<OrderHeaderDTO>(orderHeader);
                 }

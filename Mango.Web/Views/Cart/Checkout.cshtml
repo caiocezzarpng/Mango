@@ -5,6 +5,7 @@
     <input asp-for="CartHeader.Id" hidden />
     <input asp-for="CartHeader.CouponCode" hidden />
     <input asp-for="CartHeader.Discount" hidden />
+    <input asp-for="CartHeader.CartTotal" hidden />
 
     <div class="border mt-2 p-4 rounded">
         <div class="container row">
@@ -54,22 +55,38 @@
                             </div>
                         </div>
                         <hr />
-                        @foreach (var cartObj in Model.CartDetails)
+                        @if (Model?.CartDetails != null && (Model?.CartDetails).Any())
                         {
-                            <div class="row h-100">
-                                <div class="col-6">
-                                    <span style="font-size:20px">@cartObj.Product.Name</span>
-                                </div>
 
-                                <div class="col-3" style="font-size:11px;">
-                                    <span style="font-size:17px;">@cartObj.Product.Price.ToString("c")</span>
+                            @foreach (var cartObj in Model.CartDetails)
+                            {
+                                @if (cartObj != null && cartObj.Product != null)
+                                {
 
-                                </div>
-                                <div class="col-3" style="font-size:11px;">
-                                    <span style="font-size:17px;">@cartObj.Count</span>
-                                </div>
-                            </div>
-                            <hr />
+                                    <div class="row h-100">
+                                        <div class="col-6">
+                                            <span style="font-size:20px">@cartObj.Product.Name</span>
+                                        </div>
+
+                                        <div class="col-3" style="font-size:11px;">
+                                            <span style="font-size:17px;">@cartObj.Product.Price.ToString("c")</span>
+
+                                        </div>
+                                        <div class="col-3" style="font-size:11px;">
+                                            <span style="font-size:17px;">@cartObj.Count</span>
+                                        </div>
+                                    </div>
+                                    <hr />
+                                }
+                                else
+                                {
+                                    <p>Item details are not available.</p>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <p>No items in the cart.</p>
                         }
 
                         <div class="row">
