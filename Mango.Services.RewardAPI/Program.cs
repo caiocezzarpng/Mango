@@ -1,4 +1,4 @@
-using Mango.Services.ProductAPI.Data;
+using Mango.Services.RewardAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
