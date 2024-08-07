@@ -10,10 +10,12 @@ namespace Mango.Web.Controllers
     public class CartController : Controller
     {
         private readonly ICartService _cartService;
+        private readonly IOrderService _orderService;
 
-        public CartController(ICartService cartService)
+        public CartController(ICartService cartService, IOrderService orderService)
         {
             _cartService = cartService;
+            _orderService = orderService;
         }
 
         [Authorize]
@@ -22,11 +24,17 @@ namespace Mango.Web.Controllers
             return View(await LoadCartDTOBasedOnLoggedInUser());
         }
 
+        [Authorize]
+        public async Task<IActionResult> Confirmation(long orderId)
+        {
+            return View(orderId);
+        }
+
         public async Task<IActionResult> Remove(long cartDetailsId)
         {
             var userId = User.Claims.Where(u => u.Type == JwtRegisteredClaimNames.Sub)?.FirstOrDefault()?.Value;
             ResponseDTO? response = await _cartService.RemoveFromCartAsync(cartDetailsId);
-            
+
             if (response != null && response.Success)
             {
                 TempData["success"] = "Item has been removed from cart successfully.";
@@ -44,7 +52,7 @@ namespace Mango.Web.Controllers
                 TempData["success"] = "Coupon applied successfully.";
                 return RedirectToAction(nameof(CartIndex));
             }
-            return View();   
+            return View();
         }
 
         [HttpPost]
@@ -91,6 +99,42 @@ namespace Mango.Web.Controllers
         public async Task<IActionResult> Checkout()
         {
             return View(await LoadCartDTOBasedOnLoggedInUser());
+        }
+
+        [HttpPost]
+        [ActionName("Checkout")]
+        public async Task<IActionResult> Checkout(CartDTO cartDto)
+        {
+            CartDTO cart = await LoadCartDTOBasedOnLoggedInUser();
+            cart.CartHeader.Telephone = cartDto.CartHeader.Telephone;
+            cart.CartHeader.Email = cartDto.CartHeader.Email;
+            cart.CartHeader.Name = cartDto.CartHeader.Name;
+
+            var response = await _orderService.CreateOrderAsync(cart);
+            OrderHeaderDTO orderHeaderDto =
+                JsonConvert.DeserializeObject<OrderHeaderDTO>(Convert.ToString(response.Result));
+
+            if (response != null && response.Success)
+            {
+                var domain = Request.Scheme + "://" + Request.Host.Value + "/";
+
+                StripeRequestDTO stripeRequestDto = new()
+                {
+                    ApprovedUrl = domain + "cart/Confirmation?orderId=" + orderHeaderDto.OrderHeaderId,
+                    CancelUrl = domain + "cart/Checkout",
+                    OrderHeader = orderHeaderDto
+                };
+
+                var stripeResponse = await _orderService.CreateStripeSession(stripeRequestDto);
+
+                StripeRequestDTO stripeResponseDto =
+                    JsonConvert.DeserializeObject<StripeRequestDTO>(Convert.ToString(stripeResponse.Result));
+
+                Response.Headers.Add("Location", stripeResponseDto.StripeSessionUrl);
+                return new StatusCodeResult(303);
+            }
+
+            return View();
         }
     }
 }
