@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
+using Mango.Web.Utils;
 
 namespace Mango.Web.Controllers
 {
@@ -27,6 +28,19 @@ namespace Mango.Web.Controllers
         [Authorize]
         public async Task<IActionResult> Confirmation(long orderId)
         {
+            ResponseDTO? response = await _orderService.ValidateStripeSession(orderId);
+
+            if (response != null && response.Success)
+            {
+                OrderHeaderDTO orderHeaderDto = JsonConvert.DeserializeObject<OrderHeaderDTO>(Convert.ToString(response.Result));
+                if (orderHeaderDto.Status == StaticDetails.Status_Approved)
+                {
+                    return View(orderId);
+                }
+
+                TempData["error"] = "erro no seu pedido.";
+            }
+
             return View(orderId);
         }
 
