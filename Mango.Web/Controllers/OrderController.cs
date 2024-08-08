@@ -91,7 +91,7 @@ namespace Mango.Web.Controllers
                 TempData["success"] = "Status updated successfully";
                 return RedirectToAction(nameof(OrderDetails), new { orderId = orderId });
             }
-            return View();
+            return View(nameof(OrderIndex));
         }
 
         [HttpPost("CompleteOrder")]
@@ -103,7 +103,7 @@ namespace Mango.Web.Controllers
                 TempData["success"] = "Status updated successfully";
                 return RedirectToAction(nameof(OrderDetails), new { orderId = orderId });
             }
-            return View();
+            return View(nameof(OrderIndex));
         }
 
         [HttpPost("CancelOrder")]
@@ -115,7 +115,7 @@ namespace Mango.Web.Controllers
                 TempData["success"] = "Status updated successfully";
                 return RedirectToAction(nameof(OrderDetails), new { orderId = orderId });
             }
-            return View();
+            return View(nameof(OrderIndex));
         }
 
     }
