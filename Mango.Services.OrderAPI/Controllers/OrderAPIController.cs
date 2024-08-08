@@ -6,6 +6,7 @@ using Mango.Services.OrderAPI.Models.DTOs;
 using Mango.Services.OrderAPI.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Stripe;
 using Stripe.Checkout;
 
@@ -28,6 +29,53 @@ namespace Mango.Services.OrderAPI.Controllers
             _messageBus = messageBus;
             _response = new ResponseDTO();
             _configuration = configuration;
+        }
+
+        [Authorize]
+        [HttpGet("GetOrders")]
+        public ResponseDTO? Get(string? userId = "")
+        {
+            try
+            {
+                IEnumerable<OrderHeader> objList;
+
+                if (User.IsInRole(StaticDetails.RoleAdmin))
+                {
+                    objList = _db.OrderHeaders.Include(u => u.OrderDetails)
+                        .OrderByDescending(u => u.OrderHeaderId).ToList();
+                }
+                else
+                {
+                    objList = _db.OrderHeaders.Include(u => u.OrderDetails).Where(u => u.UserId == userId)
+                        .OrderByDescending(u => u.OrderHeaderId).ToList();
+                }
+                _response.Result = _mapper.Map<IEnumerable<OrderHeaderDTO>>(objList);
+            }
+            catch (Exception ex)
+            {
+                _response.Success = false;
+                _response.Message = ex.Message;
+            }
+            return _response;
+        }
+
+        [Authorize]
+        [HttpGet("GetOrder/{id:long}")]
+        public ResponseDTO? Get(long id)
+        {
+            try
+            {
+                var orderHeader =
+                    _db.OrderHeaders.Include(u => u.OrderDetails).First(u => u.OrderHeaderId == id);
+                _response.Result = _mapper.Map<OrderHeaderDTO>(orderHeader);
+                _response.Success = true;
+            }
+            catch (Exception ex)
+            {
+                _response.Success = false;
+                _response.Message = ex.Message;
+            }
+            return _response;
         }
 
         [Authorize]
@@ -84,7 +132,7 @@ namespace Mango.Services.OrderAPI.Controllers
                     {
                         PriceData = new SessionLineItemPriceDataOptions
                         {
-                            UnitAmount = (long)(item.Price*100),
+                            UnitAmount = (long)(item.Price * 100),
                             Currency = "usd",
                             ProductData = new SessionLineItemPriceDataProductDataOptions
                             {
@@ -97,14 +145,15 @@ namespace Mango.Services.OrderAPI.Controllers
                     options.LineItems.Add(sessionLineItem);
                 }
 
-                if (stripeRequestDto.OrderHeader.Discount > 0) {
+                if (stripeRequestDto.OrderHeader.Discount > 0)
+                {
                     options.Discounts = discountsObj;
                 }
 
                 var service = new SessionService();
                 Session session = service.Create(options);
                 stripeRequestDto.StripeSessionUrl = session.Url;
-                OrderHeader orderHeader = _db.OrderHeaders.First(u=> u.OrderHeaderId == stripeRequestDto.OrderHeader.OrderHeaderId);
+                OrderHeader orderHeader = _db.OrderHeaders.First(u => u.OrderHeaderId == stripeRequestDto.OrderHeader.OrderHeaderId);
                 orderHeader.StripeSessionId = session.Id;
                 _db.SaveChanges();
                 _response.Result = stripeRequestDto;
@@ -124,7 +173,7 @@ namespace Mango.Services.OrderAPI.Controllers
         {
             try
             {
-                OrderHeader orderHeader = _db.OrderHeaders.First(u=> u.OrderHeaderId == orderHeaderId);
+                OrderHeader orderHeader = _db.OrderHeaders.First(u => u.OrderHeaderId == orderHeaderId);
 
                 var service = new SessionService();
                 Session session = service.Get(orderHeader.StripeSessionId);
@@ -150,6 +199,46 @@ namespace Mango.Services.OrderAPI.Controllers
                     await _messageBus.PublishMessage(reward, topicName);
 
                     _response.Result = _mapper.Map<OrderHeaderDTO>(orderHeader);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.Success = false;
+                _response.Message = ex.Message;
+            }
+            return _response;
+        }
+
+
+        [Authorize]
+        [HttpPost("UpdateOrderStatus/{orderId:long}")]
+        public async Task<ResponseDTO> UpdateOrderStatus(long orderId, [FromBody] string newStatus)
+        {
+            try
+            {
+                OrderHeader orderHeader = _db.OrderHeaders.First(u => u.OrderHeaderId == orderId);
+                if (orderHeader != null)
+                {
+                    if (newStatus == StaticDetails.Status_Cancelled)
+                    {
+                        // We will give refund
+                        var options = new RefundCreateOptions
+                        {
+                            Reason = RefundReasons.RequestedByCustomer,
+                            Amount = (long)(orderHeader.OrderTotal * 100),
+                            PaymentIntent = orderHeader.PaymentIntentId
+                        };
+
+                        var service = new RefundService();
+                        var refund = service.Create(options);
+                    }
+                    orderHeader.Status = newStatus;
+                    _db.SaveChanges();
+                }
+                else
+                {
+                    _response.Success = false;
+                    _response.Message = "Order not found";
                 }
             }
             catch (Exception ex)
