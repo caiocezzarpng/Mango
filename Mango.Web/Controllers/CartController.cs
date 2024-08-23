@@ -54,7 +54,7 @@ namespace Mango.Web.Controllers
                 TempData["success"] = "Item has been removed from cart successfully.";
                 return RedirectToAction(nameof(CartIndex));
             }
-            return View();
+            return View(nameof(CartIndex));
         }
 
         [HttpPost]
@@ -66,7 +66,7 @@ namespace Mango.Web.Controllers
                 TempData["success"] = "Coupon applied successfully.";
                 return RedirectToAction(nameof(CartIndex));
             }
-            return View();
+            return View(nameof(CartIndex));
         }
 
         [HttpPost]
@@ -93,7 +93,7 @@ namespace Mango.Web.Controllers
                 TempData["success"] = "Coupon removed successfully.";
                 return RedirectToAction(nameof(CartIndex));
             }
-            return View();
+            return View(nameof(CartIndex));
         }
 
         [Authorize]

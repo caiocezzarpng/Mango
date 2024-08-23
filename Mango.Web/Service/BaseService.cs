@@ -25,7 +25,9 @@ namespace Mango.Web.Service
             {
                 HttpClient client = _httpClientFactory.CreateClient("MangoAPI");
                 HttpRequestMessage message = new();
-                message.Headers.Add("Accept", "application/json");
+
+                message.Headers.Add("Accept",
+                    requestDTO.ContentType == ContentType.MultipartFormData ? "*/*" : "application/json");
 
                 if (withBearer)
                 {
@@ -35,9 +37,29 @@ namespace Mango.Web.Service
 
                 message.RequestUri = new Uri(requestDTO.Url);
 
-                if (requestDTO.Data != null)
+                if (requestDTO.ContentType == ContentType.MultipartFormData)
                 {
-                    message.Content = new StringContent(JsonConvert.SerializeObject(requestDTO.Data), Encoding.UTF8, "application/json");
+                    var content = new MultipartFormDataContent();
+
+                    foreach (var prop in requestDTO.Data.GetType().GetProperties())
+                    {
+                        var value = prop.GetValue(requestDTO.Data, null);
+                        if (value is FormFile)
+                        {
+                            var file = (FormFile)value;
+                            if (file != null)
+                            {
+                                content.Add(new StreamContent(file.OpenReadStream()), prop.Name, file.FileName);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (requestDTO.Data != null)
+                    {
+                        message.Content = new StringContent(JsonConvert.SerializeObject(requestDTO.Data), Encoding.UTF8, "application/json");
+                    }
                 }
 
                 HttpResponseMessage? apiResponse = null;
