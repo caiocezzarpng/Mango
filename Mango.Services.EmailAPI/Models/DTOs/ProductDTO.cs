@@ -13,5 +13,6 @@ namespace Mango.Services.EmailAPI.Models.DTOs
 
         [Range(1, 100)]
         public int count { get; set; } = 1;
+        public string? ImageLocalPath { get; set; }
     }
 }
