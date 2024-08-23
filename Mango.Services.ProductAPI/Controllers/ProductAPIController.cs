@@ -96,11 +96,35 @@ namespace Mango.Services.ProductAPI.Controllers
         {
             try
             {
-                Product obj = _mapper.Map<Product>(productDTO);
-                _db.Products.Add(obj);
+                Product product = _mapper.Map<Product>(productDTO);
+                _db.Products.Add(product);
                 _db.SaveChanges();
 
-                _response.Result = _mapper.Map<ProductDTO>(obj);
+                if (productDTO.Image != null)
+                {
+                    string fileName = product.Id + Path.GetExtension(productDTO.Image.FileName);
+                    string filePath = @"wwwroot\ProductImages\" + fileName;
+                    var filePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), filePath);
+
+                    using (var fileStream = new FileStream(filePathDirectory, FileMode.Create))
+                    {
+                        productDTO.Image.CopyTo(fileStream);
+                    }
+
+                    var baseUrl =
+                        $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{HttpContext.Request.PathBase.Value}";
+                    product.ImageUrl = baseUrl + "/ProductImages/" + filePath;
+                    product.ImageLocalPath = filePath;
+                }
+                else
+                {
+                    product.ImageUrl = "https://placehold.co/600x400";
+                }
+
+                _db.Products.Update(product);
+                _db.SaveChanges();
+
+                _response.Result = _mapper.Map<ProductDTO>(product);
             }
             catch (Exception ex)
             {
