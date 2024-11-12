@@ -92,28 +92,28 @@ namespace Mango.Services.ProductAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
-        public ResponseDTO Post([FromBody] ProductDTO productDTO)
+        public ResponseDTO Post(ProductDTO productDto)
         {
             try
             {
-                Product product = _mapper.Map<Product>(productDTO);
+                Product product = _mapper.Map<Product>(productDto);
                 _db.Products.Add(product);
                 _db.SaveChanges();
 
-                if (productDTO.Image != null)
+                if (productDto.Image != null)
                 {
-                    string fileName = product.Id + Path.GetExtension(productDTO.Image.FileName);
+                    string fileName = product.Id + Path.GetExtension(productDto.Image.FileName);
                     string filePath = @"wwwroot\ProductImages\" + fileName;
                     var filePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), filePath);
 
                     using (var fileStream = new FileStream(filePathDirectory, FileMode.Create))
                     {
-                        productDTO.Image.CopyTo(fileStream);
+                        productDto.Image.CopyTo(fileStream);
                     }
 
                     var baseUrl =
                         $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{HttpContext.Request.PathBase.Value}";
-                    product.ImageUrl = baseUrl + "/ProductImages/" + filePath;
+                    product.ImageUrl = baseUrl + "/ProductImages/" + fileName;
                     product.ImageLocalPath = filePath;
                 }
                 else
@@ -137,11 +137,43 @@ namespace Mango.Services.ProductAPI.Controllers
 
         [HttpPut]
         [Authorize(Roles = "ADMIN")]
-        public ResponseDTO Put([FromBody] ProductDTO productDTO)
+        public ResponseDTO Put(ProductDTO productDto)
         {
             try
             {
-                Product obj = _mapper.Map<Product>(productDTO);
+                Product obj = _mapper.Map<Product>(productDto);
+
+                if (productDto.Image != null)
+                {
+                    if (!string.IsNullOrEmpty((obj.ImageLocalPath)))
+                    {
+                        var oldFilePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), obj.ImageLocalPath);
+                        FileInfo file = new FileInfo(oldFilePathDirectory);
+                        if (file.Exists)
+                        {
+                            file.Delete();
+                        }
+                    }
+
+                    string fileName = obj.Id + Path.GetExtension(productDto.Image.FileName);
+                    string filePath = @"wwwroot\ProductImages\" + fileName;
+                    var filePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), filePath);
+
+                    using (var fileStream = new FileStream(filePathDirectory, FileMode.Create))
+                    {
+                        productDto.Image.CopyTo(fileStream);
+                    }
+
+                    var baseUrl =
+                        $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{HttpContext.Request.PathBase.Value}";
+                    obj.ImageUrl = baseUrl + "/ProductImages/" + fileName;
+                    obj.ImageLocalPath = filePath;
+                }
+                else
+                {
+                    obj.ImageUrl = "https://placehold.co/600x400";
+                }
+
                 _db.Products.Update(obj);
                 _db.SaveChanges();
 
@@ -164,6 +196,15 @@ namespace Mango.Services.ProductAPI.Controllers
             try
             {
                 Product obj = _db.Products.First(u => u.Id == id);
+                if (!string.IsNullOrEmpty((obj.ImageLocalPath)))
+                {
+                    var oldFilePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), obj.ImageLocalPath);
+                    FileInfo file = new FileInfo(oldFilePathDirectory);
+                    if (file.Exists)
+                    {
+                        file.Delete();
+                    }
+                }
                 _db.Products.Remove(obj);
                 _db.SaveChanges();
 
